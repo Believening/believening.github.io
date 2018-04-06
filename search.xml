@@ -23,17 +23,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[三月份的尾巴是四月的计划]]></title>
-    <url>%2F2018%2F03%2F31%2F%E4%B8%89%E6%9C%88%E4%BB%BD%E7%9A%84%E5%B0%BE%E5%B7%B4%E6%98%AF%E5%9B%9B%E6%9C%88%E7%9A%84%E8%AE%A1%E5%88%92%2F</url>
-    <content type="text"><![CDATA[离自己在新 “year” 里创建这个博客眨眼就又跨了个“年”。开学伊始，便是准备找实习，连学习和生活都被打乱了。现在又基本安定下来，所以就阶段性规划一下。 Time Activity PlanB Or Pretense 7：00 - 7：30 该起床了 没有B计划，不能睡懒觉 before 8：00 Reading English 附加 breakfast，为了祖国的花朵 上午时光 R 与 数据科学 不可预知的外事/(ㄒoㄒ)/~~ 12：30左右 吃饭和睡觉一样舒服 没可能不吃饭，我要增肥 午后时光(Af14：00) 两点之前要睡觉，两点之后做项目 谁都有可能遇个急事 晚饭后 看个电影？看篇文章？写个 review 接续下午的事业也不错 22：00 前 要运动，跑几圈就好了 没跑就回去多学习 22：00 -23：00 复习复习，洗洗睡了 要记住，早睡不是关键，早起才是目的 写完了，回头一瞅，这是什么蛇皮计划，好像连一点明确的目标都没有。但是写着的过程中，想着我的“小目标”是真的小啊 (￣ ‘i ￣;)，原谅我脸皮薄吧。 既然又写起来了，那么就写多几句话。 春天到了，又是那俩个词“思春”和“悲秋”…… 不说了，愿 zkx 找到好实习吧，xzz 稳了我信他。]]></content>
-      <categories>
-        <category>life</category>
-      </categories>
-      <tags>
-        <tag>planning</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[以太坊私有链及开发（二）]]></title>
     <url>%2F2018%2F01%2F20%2F%E4%BB%A5%E5%A4%AA%E5%9D%8A%E7%A7%81%E6%9C%89%E9%93%BE%E5%8F%8A%E5%BC%80%E5%8F%91%EF%BC%88%E4%BA%8C%EF%BC%89%2F</url>
     <content type="text"><![CDATA[本文将在前文基础上，进一步对在 docker 容器上部署以太坊私有链节点展开实践。在文章最后提出了三点疑问。 geth相关前提准备知识通过geth命令就可以启动 peer-to-peer 节点，默认启动节点会接入以太坊生产环境网络（网络id：1），此处将记录附带参数从而将本地或者远端已存在的以太坊私有链节点开启。 一般常用 ethereum options：--datadir {path}: 指定 geth 在启动节点时 databases 和 keystore 的文件夹地址 path--networkid {num}: 指定私有链的网络 id，注意区别于主网络与测试网络 num 涉及到到的 command：init gensis.json：初始化节点 创世区块配置信息记录在 json 文件中attach {ipc path}：通过ipc文件连接到节点的 JS 控制台 docker部署构建 geth 自定义镜像 新建文件夹并进入，创建以太坊节点创世区块配置文件 vi gensis.json 1234567891011121314151617&#123; "config": &#123; "chainId": 100863, "homesteadBlock": 0, "eip155Block": 0, "eip158Block": 0 &#125;, "alloc" : &#123;&#125;, "coinbase" : "0x0000000000000000000000000000000000000000", "difficulty" : "0x20000", "extraData" : "", "gasLimit" : "0xffffffff", "nonce" : "0x123456789a000042", "mixhash" : "0x0000000000000000000000000000000000000000000000000000000000000000", "parentHash" : "0x0000000000000000000000000000000000000000000000000000000000000000", "timestamp" : "0x00"&#125; 自定义 Dockerfile 文件： 123456789101112131415161718# pull base imageFROM ethereum/client-go# claim authorMAINTAINER believening# make ethereum_node directory as the database directoryWORKDIR /ethereum_node# add genesis.jsonADD genesis.json /ethereum_node# initial the node by genesis.jsonRUN geth --datadir /ethereum_node init /ethereum_node/genesis.json# private expose: Network listening 30303, Rpc listening 8545EXPOSE 30303EXPOSE 8545 ADD 会以 Dockerfile 所在文件夹为初始路径 构建自定义镜像 sudo docker build -t geth/docker:test -f Dockerfile . ： -t : Name and optionally a tag in the ‘name:tag’ format -f : Name of the Dockerfile (Default is ‘PATH/Dockerfile’) 启动 docker 上的 ethereum 节点 docker run：利用镜像启动容器，例如：sudo docker run -it --name docker_node_x -p 30311:30303 geth/docker:test geth --datadir /ethereum_node --networkid 100863: 1、-it 在终端可以进行交互； 2、-p 将主机的端口绑定给容器提供服务的端口 docker restart CONTAINER [CONTAINER ...] : 重新启动容器 CONTAINER， 可启动多个 docker exec [OPTIONS] CONTAINER COMMAND [ARG...] ：在指定容器内指定指定命令可以执行 sudo docker exec -it CONTAINER geth --datadir /ethereum_node attach /ethereum_node/geth.ipc 连接到部署在容器的节点的js控制台 测试发现，容器部署节点时，添加引导节点的 enode 地址并不能将节点相连。 容器内节点使用 admin.addPeer 函数添加节点时不成功，使用的 enode 地址为转换到主机的 ip 及端口。 容器间的交流还需要作讨论，也就是说容器的网络配置还需要学习。]]></content>
